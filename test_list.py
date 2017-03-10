@@ -1,3 +1,5 @@
+'''All optimizees used in the experiments.'''
+
 import tensorflow as tf
 import optimizee
 

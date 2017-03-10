@@ -1,3 +1,5 @@
+'''The model, tricks and optimizee used when training an RNN optimizer.'''
+
 import nn_opt
 import optimizee
 import test_list

@@ -8,7 +8,6 @@ import optimizee
 import nn_opt
 import math
 import os
-import gc
 import task_list
 import test_list
 
@@ -25,6 +24,12 @@ def task_id():
     return flags.task + "-" + flags.id
 
 def train_optimizer(task):
+    '''Train an RNN optimizer.
+    
+    Args:
+        task: A dictionary in task_list.py which specifies the model of the optimizer and 
+            the tricks and the optimizee to use when training the optimizer.
+    '''
     flags = tf.app.flags.FLAGS
     session = tf.get_default_session()
 
@@ -96,9 +101,9 @@ def train_optimizer(task):
         if 'coe' in ret:
             msg += " coe = %.5f" % np.mean(coe_values)
         log(msg, log_filename)
-        log(str(loss_values), log_filename)
-        if 'coe' in ret:
-            log(str(coe_values), log_filename)
+        #log(str(loss_values), log_filename)
+        #if 'coe' in ret:
+        #    log(str(coe_values), log_filename)
 
         if eid % 10 == 0:
             model.save(eid)
@@ -110,12 +115,17 @@ def train_optimizer(task):
                     test_loss_values[name] = {'nn': [], 'gd': []}
                 test_loss_values[name]['nn'].append(avg_loss_value)
                 test_loss_values[name]['gd'].append(gd_avg_loss_value)
-                gc.collect()
         for name in test_loss_values:
             log("epoch #%d [n_steps = %d]: test %s: loss = %.5f gd_loss = %.5f" % (eid, cur_n_steps, name,
                     np.mean(test_loss_values[name]['nn']), np.mean(test_loss_values[name]['gd'])), log_filename)
 
 def train_optimizee(task):
+    '''Use traditional optimization algorithm to train an optimizee.
+    
+    Args:
+        task: A dictionary in test_list.py which specifies the optimizee to train, 
+            the optimization algorithm to use and how many steps to train the optimizee.
+    '''
     flags = tf.app.flags.FLAGS
     session = tf.get_default_session()
     if task['frequency'] == 0:
@@ -136,7 +146,7 @@ def train_optimizee(task):
     for it in range(100):
         internal_feed_dict = opt.next_internal_feed_dict()
 
-        session.run(tf.initialize_all_variables())
+        session.run(tf.global_variables_initializer())
         session.run(x.assign(opt.get_initial_x()))
         
         eid = 0
@@ -180,6 +190,12 @@ def train_optimizee(task):
         print 'mean final loss = %.5f' % np.mean(all_val_final_loss)
 
 def optimizer_train_optimizee(task):
+    '''Use a trained RNN optimizer to train an optimizee.
+    
+    Args:
+        task: A dictionary in task_list.py which specifies the RNN optimizer.
+    '''
+
     flags = tf.app.flags.FLAGS
     session = tf.get_default_session()
 
@@ -236,7 +252,7 @@ def optimizer_train_optimizee(task):
 
     log_filename = model.name + "_data/log_test.txt" 
 
-    session.run(tf.initialize_all_variables())
+    session.run(tf.global_variables_initializer())
     assert flags.eid != 0
     model.restore(flags.eid)
     log("model %s after epoch #%d" % (task_id(), flags.eid  ), log_filename)
@@ -283,7 +299,6 @@ if __name__ == '__main__':
     tf.app.flags.DEFINE_string("id", randid(), "id")
     tf.app.flags.DEFINE_integer("gpu", 0, "gpu id")
     tf.app.flags.DEFINE_string("train", "optimizer", "optimizer, optimizee, or optimizer_train_optimizee")
-    tf.app.flags.DEFINE_integer("seid", 0, "the epoch id to continue training (for test)")
     tf.app.flags.DEFINE_integer("eid", 0, "the epoch id to continue training")
     tf.app.flags.DEFINE_integer("n_steps", 100, "the number of iterations in training RNN optimizer")
     tf.app.flags.DEFINE_integer("n_bptt_steps", 20, "the number of iterations in training RNN optimizer")
