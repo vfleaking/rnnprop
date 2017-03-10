@@ -11,7 +11,7 @@ to reproduce our RNNprop model, or use
 ```
 python main.py --task deepmind-lstm-avg
 ```
-to reproduce the DMoptimizer (Andrychowicz et al., 2016)[https://arxiv.org/abs/1606.04474] for comparison.
+to reproduce the DMoptimizer [Andrychowicz et al., 2016](https://arxiv.org/abs/1606.04474) for comparison.
 
 A random 6 digit letter string will be automatically generated as a unique id for each training process, and a folder named `<task-name>-<id>_data` will be created to place data and logs.
 

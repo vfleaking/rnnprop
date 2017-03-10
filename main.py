@@ -64,34 +64,24 @@ def train_optimizer(task):
         eid += 1
 
         loss_values = []
-        coe_values = []
         for i in range(flags.n_batches):
             ret = model.train_one_iteration(n_steps)
 
             loss_value = ret['loss']
 
             loss_values.append(loss_value)
-            if 'coe' in ret:
-                coe_value = ret['coe']
-                coe_values.append(coe_value)
 
             sys.stdout.write("\r\033[K")
             msg = "iteration #%d" % i
             msg += ": loss = %.5f avg loss = %.5f" % (loss_value, np.mean(loss_values))
-            if 'coe' in ret:
-                msg += " coe = %.5f avg coe = %.5f" % (coe_value, np.mean(coe_values))
             sys.stdout.write(msg)
             sys.stdout.flush()
 
         sys.stdout.write("\r\033[K")
         msg = "epoch #%d" % eid
         msg += ": loss = %.5f" % np.mean(loss_values)
-        if 'coe' in ret:
-            msg += " coe = %.5f" % np.mean(coe_values)
         log(msg, log_filename)
-        #log(str(loss_values), log_filename)
-        #if 'coe' in ret:
-        #    log(str(coe_values), log_filename)
+        log(str(loss_values), log_filename)
 
         if eid % 10 == 0:
             model.save(eid)
