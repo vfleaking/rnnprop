@@ -6,6 +6,10 @@ import os
 
 # batch size = 1
 class BasicNNOptModel:
+    '''Base class for all RNN optimizers.
+    
+    Provide the functions needed to train an RNN optimizer.
+    '''
     def weight_initializer(self):
         return tf.truncated_normal_initializer(stddev=0.1)
     def bias_initializer(self):

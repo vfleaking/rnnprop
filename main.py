@@ -39,13 +39,7 @@ def train_optimizer(task):
     n_bptt_steps = task['n_bptt_steps'] if 'n_bptt_steps' in task else flags.n_bptt_steps
     use_avg_loss = task['use_avg_loss'] if 'use_avg_loss' in task else False
     options = task['options'] if 'options' in task else {}
-
-    if type(n_steps) == type(1):
-        n_steps = [n_steps]
-
-    assert type(n_steps) == type([])
-    for num in n_steps:
-        assert num % n_bptt_steps == 0
+    assert n_steps % n_bptt_steps == 0
 
     model = task['model'](
             name=task_id(),
@@ -69,12 +63,10 @@ def train_optimizer(task):
     while flags.n_epochs == 0 or eid < flags.n_epochs:
         eid += 1
 
-        cur_n_steps = n_steps[(eid - 1) % len(n_steps)]
-
         loss_values = []
         coe_values = []
         for i in range(flags.n_batches):
-            ret = model.train_one_iteration(cur_n_steps)
+            ret = model.train_one_iteration(n_steps)
 
             loss_value = ret['loss']
 
@@ -85,8 +77,6 @@ def train_optimizer(task):
 
             sys.stdout.write("\r\033[K")
             msg = "iteration #%d" % i
-            if len(n_steps) > 1:
-                msg += "[ns=%d]" % cur_n_steps
             msg += ": loss = %.5f avg loss = %.5f" % (loss_value, np.mean(loss_values))
             if 'coe' in ret:
                 msg += " coe = %.5f avg coe = %.5f" % (coe_value, np.mean(coe_values))
@@ -95,8 +85,6 @@ def train_optimizer(task):
 
         sys.stdout.write("\r\033[K")
         msg = "epoch #%d" % eid
-        if len(n_steps) > 1:
-            msg += "[ns=%d]" % cur_n_steps
         msg += ": loss = %.5f" % np.mean(loss_values)
         if 'coe' in ret:
             msg += " coe = %.5f" % np.mean(coe_values)
@@ -116,11 +104,12 @@ def train_optimizer(task):
                 test_loss_values[name]['nn'].append(avg_loss_value)
                 test_loss_values[name]['gd'].append(gd_avg_loss_value)
         for name in test_loss_values:
-            log("epoch #%d [n_steps = %d]: test %s: loss = %.5f gd_loss = %.5f" % (eid, cur_n_steps, name,
+            log("epoch #%d test %s: loss = %.5f gd_loss = %.5f" % (eid, name,
                     np.mean(test_loss_values[name]['nn']), np.mean(test_loss_values[name]['gd'])), log_filename)
 
 def train_optimizee(task):
-    '''Use traditional optimization algorithm to train an optimizee.
+    '''Use traditional optimization algorithm to train an optimizee and get more 
+        information about the gradient each step and the final optimizee parameters.
     
     Args:
         task: A dictionary in test_list.py which specifies the optimizee to train, 
@@ -167,7 +156,7 @@ def train_optimizee(task):
                 loss_values.append(loss_value)
 
                 sys.stdout.write("\r\033[K")
-                sys.stdout.write("iteration #%d: loss = %.5f grad rms: %.5f grad mean: %.5f grad var: %.5f min: %.5f max: %.5f" % (i, loss_value, math.sqrt(np.mean(grad_value ** 2)), np.mean(grad_value), math.sqrt(np.var(grad_value)), np.min(grad_value), np.max(grad_value)))
+                sys.stdout.write("iteration #%d: loss = %.5f grad rms: %.5f grad mean: %.5f grad var: %.5f grad min: %.5f grad max: %.5f" % (i, loss_value, math.sqrt(np.mean(grad_value ** 2)), np.mean(grad_value), math.sqrt(np.var(grad_value)), np.min(grad_value), np.max(grad_value)))
                 avg_grad_rms += math.sqrt(np.mean(grad_value ** 2))
                 sys.stdout.flush()
 
@@ -184,13 +173,13 @@ def train_optimizee(task):
 
             val_x = x.eval()
             print "epoch #%d: loss = %.5f" % (eid, val_final_loss)
-            print "mean: %.5f std_var: %.5f min: %.5f max: %.5f grad rms: %.5f" % (np.mean(val_x), math.sqrt(np.var(val_x)), np.min(val_x), np.max(val_x), avg_grad_rms)
+            print "x mean: %.5f x std_var: %.5f x min: %.5f x max: %.5f grad rms: %.5f" % (np.mean(val_x), math.sqrt(np.var(val_x)), np.min(val_x), np.max(val_x), avg_grad_rms)
 
         all_val_final_loss.append(val_final_loss)
         print 'mean final loss = %.5f' % np.mean(all_val_final_loss)
 
 def optimizer_train_optimizee(task):
-    '''Use a trained RNN optimizer to train an optimizee.
+    '''Test a trained RNN optimizer on different optimizees.
     
     Args:
         task: A dictionary in task_list.py which specifies the RNN optimizer.
@@ -230,17 +219,9 @@ def optimizer_train_optimizee(task):
 
     task['optimizee']['train'].build()
 
-    n_steps = task['n_steps'] if 'n_steps' in task else flags.n_steps
     n_bptt_steps = task['n_bptt_steps'] if 'n_bptt_steps' in task else flags.n_bptt_steps
     use_avg_loss = task['use_avg_loss'] if 'use_avg_loss' in task else False
     options = task['options'] if 'options' in task else {}
-
-    if type(n_steps) == type(1):
-        n_steps = [n_steps]
-
-    assert type(n_steps) == type([])
-    for num in n_steps:
-        assert num % n_bptt_steps == 0
 
     model = task['model'](
             name=task_id(),

@@ -3,6 +3,7 @@ import numpy as np
 import optimizee
 
 class Square(optimizee.Optimizee):
+    '''A simple convex function that can be used to combine with other optimizees.'''
     def __init__(self, x_dim):
         optimizee.Optimizee.__init__(self)
         self.x_dim = x_dim

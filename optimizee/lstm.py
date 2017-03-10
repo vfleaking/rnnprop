@@ -24,6 +24,7 @@ def lstm_func(x, h, c, wx, wh, b):
     return next_h, next_c
 
 class SinLSTMModel(optimizee.Optimizee):
+    '''A simple sequence prediction task implemented by LSTM.'''
     mnist = None
 
     def __init__(self, n_batches=128, n_h=20, n_l=10, n_lstm=1, noise_scale=0.1, initial_param_scale=0.1):

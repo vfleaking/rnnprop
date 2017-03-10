@@ -13,6 +13,7 @@ from six.moves import urllib
 DATA_URL = 'http://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz'
 
 class VGGModel(optimizee.Optimizee):
+    '''VGG-like CNNs on dataset MNIST or CIFAR10.'''
     mnist_dataset = None 
     cifar_dataset = None 
     def __init__(self, input_data='mnist', n_batches=128, fc_num=1, conv_num=2, pool_num=1, add_dropout=False, initial_param_scale=0.1):
@@ -134,7 +135,7 @@ class VGGModel(optimizee.Optimizee):
         
 class cifar(object):
     """
-    An incomplete class to help to read data from cifar-10. 
+    A class to help to read data from cifar-10. 
     Only training data included.
     """
     def __init__(self, dirname, one_hot=True):

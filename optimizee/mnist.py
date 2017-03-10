@@ -4,6 +4,8 @@ import numpy as np
 import optimizee
 
 class MnistLinearModel(optimizee.Optimizee):
+    '''A MLP on dataset MNIST.'''
+
     mnist = None
 
     def __init__(self, activation='sigmoid', n_batches=128, n_h=20, n_l=1, initial_param_scale=0.1):
